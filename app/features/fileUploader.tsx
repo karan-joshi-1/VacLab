@@ -9,7 +9,7 @@ export default function FileUploader() {
   const router = useRouter();
   
   // Create base home directory from connection details
-  const baseHomeDir = `/home/${connectionDetails.hostname || 'username'}`;
+  const baseHomeDir = `/home/${connectionDetails.hostname || 'username'}/loading`;
   
   // Use the home directory as default
   const [remoteDir, setRemoteDir] = useState<string>(baseHomeDir);
@@ -181,18 +181,86 @@ export default function FileUploader() {
     setUploadStatus({ status: 'uploading', message: 'Uploading file...' });
     
     try {
-      const response = await fetch('/api/upload', {
+      // First upload the file
+      const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
       
-      const result = await response.json();
+      const uploadResult = await uploadResponse.json();
       
-      if (response.ok) {
+      if (uploadResponse.ok) {
         setUploadStatus({
           status: 'success',
-          message: result.message || 'File uploaded successfully'
+          message: uploadResult.message || 'File uploaded successfully'
         });
+
+        // Now call the model-run API to execute the command on VM
+        try {
+          setUploadStatus({
+            status: 'uploading', 
+            message: 'Running command on VM...'
+          });
+
+          const modelRunResponse = await fetch('/api/model-run', {
+            method: 'POST',
+            body: formData, // Reuse the same formData which contains the connection details
+          });
+
+          const modelRunResult = await modelRunResponse.json();
+
+          if (modelRunResponse.ok) {
+            // Show job progress messages one by one
+            if (modelRunResult.stdout || modelRunResult.stderr) {
+              const outputLines: any = [];
+              
+              // Process stdout if available
+              if (modelRunResult.stdout) {
+                const stdoutLines = modelRunResult.stdout.split('\n').filter(Boolean);
+                stdoutLines.forEach((line: string) => {
+                  if (line.trim()) outputLines.push(`STDOUT: ${line.trim()}`);
+                });
+              }
+              
+              // Process stderr if available
+              if (modelRunResult.stderr) {
+                const stderrLines = modelRunResult.stderr.split('\n').filter(Boolean);
+                stderrLines.forEach((line: string) => {
+                  if (line.trim()) outputLines.push(`STDERR: ${line.trim()}`);
+                });
+              }
+              
+              // Show each line with a delay to simulate progression
+              if (outputLines.length > 0) {
+                for (let i = 0; i < outputLines.length; i++) {
+                  setUploadStatus({
+                    status: 'uploading',
+                    message: outputLines[i]
+                  });
+                  await new Promise(resolve => setTimeout(resolve, 800)); // 800ms delay between messages
+                }
+              }
+            }
+            
+            // Finally show success message
+            setUploadStatus({
+              status: 'success',
+              message: 'File uploaded and command executed successfully'
+            });
+          } else {
+            setUploadStatus({
+              status: 'error',
+              message: `Upload succeeded but command execution failed: ${modelRunResult.message || 'Unknown error'}`
+            });
+          }
+        } catch (modelRunError) {
+          console.error('Model run error:', modelRunError);
+          setUploadStatus({
+            status: 'error',
+            message: 'File uploaded successfully, but command execution failed. Please check the console for details.'
+          });
+        }
+
         // Reset file input if we're not in JSON mode
         if (!jsonMode && fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -201,7 +269,7 @@ export default function FileUploader() {
       } else {
         setUploadStatus({
           status: 'error',
-          message: result.message || 'Upload failed'
+          message: uploadResult.message || 'Upload failed'
         });
       }
     } catch (error) {
@@ -402,7 +470,7 @@ export default function FileUploader() {
           >
             {uploadStatus.status === 'uploading' 
               ? 'Uploading...' 
-              : `Upload ${selectedFile ? selectedFile.name : 'File'}`}
+              : `Upload & Run ${selectedFile ? selectedFile.name  : ''}`}
           </button>
         </form>
       </div>
