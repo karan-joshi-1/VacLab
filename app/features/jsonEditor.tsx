@@ -34,7 +34,7 @@ const ReactJson = dynamic(
   { ssr: false }
 );
 
-export default function JsonEditor({ importedJson = null, onJsonChange = null, fileName = 'model_parameters.json' }: JsonEditorProps) {
+export default function JsonEditor({ importedJson = null, onJsonChange = null, fileName = 'modelConfig.json' }: JsonEditorProps) {
     // Get connection details for SFTP upload
     const { connectionDetails } = useAuth();
     
@@ -55,7 +55,7 @@ export default function JsonEditor({ importedJson = null, onJsonChange = null, f
         }
     });
 
-    // Default file name based on the JSON content
+    // Default file name based on the JSON content , could be used to dynamically set the file name
     const [currentFileName, setCurrentFileName] = useState(fileName);
 
     // When importedJson changes, update the jsonData state
@@ -68,14 +68,7 @@ export default function JsonEditor({ importedJson = null, onJsonChange = null, f
                     : importedJson;
                 setJsonData(parsedData);
 
-                // Try to get a name from the JSON if it exists and fileName prop is not set
-                if (parsedData.name && fileName === 'model_parameters.json') {
-                    const sanitizedName = parsedData.name
-                        .toLowerCase()
-                        .replace(/\s+/g, '_')
-                        .replace(/[^a-z0-9_]/g, '');
-                    setCurrentFileName(`${sanitizedName}.json`);
-                }
+                
             } catch (error) {
                 console.error('Error parsing imported JSON:', error);
             }
