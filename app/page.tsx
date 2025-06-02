@@ -20,7 +20,7 @@ export default function Home() {
     }
   }, [connectionDetails.isAuthenticated, router])
 
-  // If authenticated, show the dashboard with components laid out as requested
+  // If authenticated, this will show the dashboard with components laid out as requested
   return (
     <main className="flex min-h-screen flex-col">
       {/* Connection status bar */}

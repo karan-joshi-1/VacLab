@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error searching for run by name:', error);
     
-    // Different error message based on error type
+    // error message based on error type
     let errorMessage = 'Failed to search for run by name';
     let errorDetails = error instanceof Error ? error.message : String(error);
     

@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching runs from MLflow:', error);
     
-    // Different error message based on error type
+    // error message based on error type
     let errorMessage = 'Failed to fetch runs from MLflow server';
     let errorDetails = error instanceof Error ? error.message : String(error);
     

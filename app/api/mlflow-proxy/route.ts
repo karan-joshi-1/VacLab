@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error proxying MLflow request:', error);
     
-    // Different error message based on error type
+    //  error message based on error type
     let errorMessage = 'Failed to proxy request to MLflow server';
     let errorDetails = error instanceof Error ? error.message : String(error);
     

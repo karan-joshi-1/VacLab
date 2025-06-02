@@ -39,7 +39,7 @@ export async function POST(request: Request) {
           // Log all top-level keys for debugging
           console.log(`JSON Content Keys:`, Object.keys(jsonContent));
           
-          // Look for branchName in gitParams (camelCase - as shown in the screenshot)
+          // Look for branchName in gitParams (camelCase)
           if (jsonContent.gitParams?.branchName) {
             runName = jsonContent.gitParams.branchName;
             console.log(`Found branchName in gitParams: ${runName}`);

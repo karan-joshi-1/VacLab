@@ -10,8 +10,8 @@ export async function POST(request: Request) {
     // Wrap in a Promise so Next.js waits for the SSH callbacks
     return new Promise<NextResponse>((resolve) => {
       const conn = new Client();
-      
-      // Set a timeout for the entire connection process - reduced to 10 seconds
+
+      // Set a timeout for the entire connection process - 10 seconds
       const timeoutId = setTimeout(() => {
         conn.end();
         console.error('SSH connection timeout');
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
           clearTimeout(timeoutId);
           console.error('SSH connection error:', err.message);
           
-          // More specific error messages based on common errors
+          // Specific error messages based on common errors
           let statusMessage = err.message;
           let statusCode = 500;
           

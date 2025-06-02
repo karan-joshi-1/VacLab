@@ -310,7 +310,7 @@ export default function MlLoader({ onJsonChange = null }: MlLoaderProps) {
                     onJsonChange(parsedParams);
                 }
             } else {
-                // If parameters aren't directly available but we have a run_id, fetch them
+                // If parameters aren't directly available but we have a run_id, this will fetch them
                 if (foundRun.run_id) {
                     setSelectedRun(foundRun.run_id);
                     await fetchParameters(foundRun.run_id);
@@ -337,7 +337,7 @@ export default function MlLoader({ onJsonChange = null }: MlLoaderProps) {
                 port: url.port || '80'
             };
         } catch (e) {
-            // If URL parsing fails, extract what we can with regex
+            // If URL parsing fails, this will extract what we can with regex
             const ipMatch = mlflowUri.match(/\/\/([^:\/]+)(?::(\d+))?/);
             if (ipMatch) {
                 return {
@@ -359,7 +359,7 @@ export default function MlLoader({ onJsonChange = null }: MlLoaderProps) {
                 <div className="bg-gray-800 p-4 rounded-lg shadow-lg mb-4">
                     <div className="mb-4">
                         <div className="flex flex-col space-y-2">
-                            {/* Add search by run name section */}
+                            {/* this is the Add search by run name section */}
                             <div className="mt-4">
                                 <label htmlFor="runName" className="block text-sm font-medium text-gray-300 mb-1">
                                     Search by Run Name

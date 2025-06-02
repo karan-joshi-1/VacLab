@@ -16,7 +16,7 @@ interface AuthContextType {
 
 // Default connection details
 const defaultConnectionDetails: ConnectionDetails = {
-  ip: '10.250.0.22', // Hardcoded IP as per your requirements
+  ip: '10.250.0.22', // Hardcoded IP as per requirements
   hostname: '',
   password: '',
   isAuthenticated: false,
