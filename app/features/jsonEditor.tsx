@@ -80,29 +80,102 @@ export default function JsonEditor({ importedJson = null, onJsonChange = null, f
         setCurrentFileName(fileName);
     }, [fileName]);
 
+    // Function to convert string values to appropriate types
+    const convertValueType = (value: any): any => {
+        // If it's not a string, return as-is
+        if (typeof value !== 'string') {
+            return value;
+        }
+
+        const originalValue = value;
+
+        // Handle empty string
+        if (value.trim() === '') {
+            return '';
+        }
+
+        // Check for boolean values (case insensitive)
+        const lowerValue = value.toLowerCase().trim();
+        if (lowerValue === 'true') {
+            console.log(`Converted "${originalValue}" to boolean: true`);
+            return true;
+        }
+        if (lowerValue === 'false') {
+            console.log(`Converted "${originalValue}" to boolean: false`);
+            return false;
+        }
+        if (lowerValue === 'null') {
+            console.log(`Converted "${originalValue}" to null`);
+            return null;
+        }
+
+        // Check for numbers
+        if (/^-?\d+$/.test(value.trim())) {
+            // Integer
+            const intValue = parseInt(value.trim(), 10);
+            if (!isNaN(intValue)) {
+                console.log(`Converted "${originalValue}" to integer: ${intValue}`);
+                return intValue;
+            }
+        }
+
+        if (/^-?\d*\.?\d+([eE][+-]?\d+)?$/.test(value.trim())) {
+            // Float/decimal
+            const floatValue = parseFloat(value.trim());
+            if (!isNaN(floatValue)) {
+                console.log(`Converted "${originalValue}" to float: ${floatValue}`);
+                return floatValue;
+            }
+        }
+
+        // Return as string if no other type matches
+        console.log(`Keeping "${originalValue}" as string`);
+        return value;
+    };
+
+    // Function to recursively convert types in an object
+    const convertObjectTypes = (obj: any): any => {
+        if (Array.isArray(obj)) {
+            return obj.map(item => convertObjectTypes(item));
+        }
+        
+        if (obj !== null && typeof obj === 'object') {
+            const converted: any = {};
+            for (const [key, value] of Object.entries(obj)) {
+                converted[key] = convertObjectTypes(value);
+            }
+            return converted;
+        }
+        
+        return convertValueType(obj);
+    };
+
     // Handle changes to the JSON data
     const handleOnChange = (edit: { updated_src: any }) => {
-        setJsonData(edit.updated_src);
+        const convertedData = convertObjectTypes(edit.updated_src);
+        setJsonData(convertedData);
         if (onJsonChange) {
-            onJsonChange(edit.updated_src);
+            onJsonChange(convertedData);
         }
         return true; // Return true to allow the edit
     };
 
     // Handle adding new values to the JSON
-    const handleOnAdd = (add: { updated_src: any }) => {
-        setJsonData(add.updated_src);
+    const handleOnAdd = (add: { updated_src: number | string | boolean | null | object | Array<any> }) => {
+        const convertedData = convertObjectTypes(add.updated_src);
+        setJsonData(convertedData);
         if (onJsonChange) {
-            onJsonChange(add.updated_src);
+            onJsonChange(convertedData);
         }
         return true; // Return true to allow the addition
     };
 
     // Handle deleting values from the JSON
     const handleOnDelete = (deleteObj: { updated_src: any }) => {
-        setJsonData(deleteObj.updated_src);
+        const convertedData = convertObjectTypes(deleteObj.updated_src);
+        setJsonData(convertedData);
         if (onJsonChange) {
-            onJsonChange(deleteObj.updated_src);
+            onJsonChange(convertedData);
         }
         return true; // Return true to allow the deletion
     };
@@ -200,6 +273,20 @@ export default function JsonEditor({ importedJson = null, onJsonChange = null, f
                         </button>
                     </div>
                 </div>
+                
+                {/* Type conversion info */}
+                <div className="mb-3 p-2 bg-gray-700/50 rounded text-xs text-gray-300">
+                    <div className="flex items-center mb-1">
+                        <svg className="h-3 w-3 mr-1 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium">Auto Type Conversion:</span>
+                    </div>
+                    <div className="text-gray-400">
+                        Values are automatically converted: integers (123), floats (12.34), booleans (true/false), null, or kept as strings. Use Ctrl/Cmd+Enter to Submit
+                    </div>
+                </div>
+                
                 {/* Scrollable container for the JSON editor */}
                 <div className="max-h-[680px] overflow-y-auto custom-scrollbar">
                     {/* Pass props directly to the component with proper typing */}
