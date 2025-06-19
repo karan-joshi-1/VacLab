@@ -3,11 +3,11 @@
  * 
  * This API creates isolated execution environments for each model run to prevent conflicts
  * between concurrent executions. Each run gets its own folder with the pattern:
- * RunName_YYYYMMDD_HHMMSS (e.g., MyModel_20241201_143025)
+ * RunName-MM_DD_YY-HH_MM (e.g., Signet-06_11_25-11_13)
  * 
  * Features:
  * - Extracts runName from uploaded JSON files (supports multiple field locations)
- * - Creates timestamped isolated folders under /home/{hostname}/
+ * - Creates timestamped isolated folders under /home/{hostname}/vmes/
  * - Copies necessary files to isolated environment
  * - Executes envSetup.sh within the isolated context
  * - Prevents duplicate executions with reduced timeout (2s vs 5s due to isolation)
@@ -126,7 +126,8 @@ export async function POST(request: Request) {
       
       // Create isolated folder name with pattern: RunName-MM_DD_YY-HH_MM
       const isolatedFolderName = `${runName}-${timestamp}`;
-      const isolatedPath = `/home/${hostname}/${isolatedFolderName}`;
+      const vmesBasePath = `/home/${hostname}/vmes`;
+      const isolatedPath = `${vmesBasePath}/${isolatedFolderName}`;
       const sourcePath = `/home/${hostname}/loading`;
       
       console.log(`Creating isolated execution environment: ${isolatedPath}`);
@@ -193,11 +194,13 @@ export async function POST(request: Request) {
             // Function to execute the isolated environment setup and command
             function executeIsolatedEnvironment() {
               // Build the command to:
-              // 1. Create the isolated directory
-              // 2. Copy files from loading directory to isolated directory
-              // 3. Change to isolated directory
-              // 4. Execute envSetup.sh
+              // 1. Create the vmes directory structure
+              // 2. Create the isolated directory
+              // 3. Copy files from loading directory to isolated directory
+              // 4. Change to isolated directory
+              // 5. Execute envSetup.sh
               const commands = [
+                `mkdir -p "${vmesBasePath}"`,
                 `mkdir -p "${isolatedPath}"`,
                 `cp -r "${sourcePath}"/* "${isolatedPath}/" 2>/dev/null || echo "Warning: Some files may not have been copied"`,
                 `cd "${isolatedPath}"`,
