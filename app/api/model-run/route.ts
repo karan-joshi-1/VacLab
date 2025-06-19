@@ -115,17 +115,17 @@ export async function POST(request: Request) {
         );
       }
       
-      // Generate timestamp for isolated folder creation
+      // Generate timestamp for isolated folder creation in format: MM_DD_YY-HH_MM
       const now = new Date();
-      const timestamp = now.getFullYear().toString() +
-                       (now.getMonth() + 1).toString().padStart(2, '0') +
-                       now.getDate().toString().padStart(2, '0') + '_' +
-                       now.getHours().toString().padStart(2, '0') +
-                       now.getMinutes().toString().padStart(2, '0') +
-                       now.getSeconds().toString().padStart(2, '0');
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const year = now.getFullYear().toString().slice(-2); // Last 2 digits of year
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const timestamp = `${month}_${day}_${year}-${hours}_${minutes}`;
       
-      // Create isolated folder name with pattern: RunName_YYYYMMDD_HHMMSS
-      const isolatedFolderName = `${runName}_${timestamp}`;
+      // Create isolated folder name with pattern: RunName-MM_DD_YY-HH_MM
+      const isolatedFolderName = `${runName}-${timestamp}`;
       const isolatedPath = `/home/${hostname}/${isolatedFolderName}`;
       const sourcePath = `/home/${hostname}/loading`;
       
