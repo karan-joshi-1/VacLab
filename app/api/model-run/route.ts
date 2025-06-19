@@ -3,7 +3,7 @@
  * 
  * This API creates isolated execution environments for each model run to prevent conflicts
  * between concurrent executions. Each run gets its own folder with the pattern:
- * RunName-MM_DD_YY-HH_MM (e.g., Signet-06_11_25-11_13)
+ * RunName-MM_DD_YY-HH_MM_SS (e.g., Signet-06_19_25-11_13_45)
  * 
  * Features:
  * - Extracts runName from uploaded JSON files (supports multiple field locations)
@@ -115,16 +115,17 @@ export async function POST(request: Request) {
         );
       }
       
-      // Generate timestamp for isolated folder creation in format: MM_DD_YY-HH_MM
+      // Generate timestamp for isolated folder creation in format: MM_DD_YY-HH_MM_SS
       const now = new Date();
       const month = (now.getMonth() + 1).toString().padStart(2, '0');
       const day = now.getDate().toString().padStart(2, '0');
       const year = now.getFullYear().toString().slice(-2); // Last 2 digits of year
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
-      const timestamp = `${month}_${day}_${year}-${hours}_${minutes}`;
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      const timestamp = `${month}_${day}_${year}-${hours}_${minutes}_${seconds}`;
       
-      // Create isolated folder name with pattern: RunName-MM_DD_YY-HH_MM
+      // Create isolated folder name with pattern: RunName-MM_DD_YY-HH_MM_SS
       const isolatedFolderName = `${runName}-${timestamp}`;
       const vmesBasePath = `/home/${hostname}/vmes`;
       const isolatedPath = `${vmesBasePath}/${isolatedFolderName}`;
