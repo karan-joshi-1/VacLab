@@ -183,7 +183,7 @@ export default function CommandOutput({
 
   return (
     <div className="bg-gray-900 border border-gray-700 rounded-md overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-gray-800">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700 bg-gray-800">
         <div className="flex items-center">
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -204,7 +204,7 @@ export default function CommandOutput({
 
       <div 
         ref={outputContainerRef}
-        className="max-h-[320px] overflow-y-auto font-mono text-xs p-3 bg-gray-900 custom-scrollbar"
+        className="max-h-[300px] overflow-y-auto font-mono text-xs p-2 bg-gray-900 custom-scrollbar"
       >
         {outputLines.length === 0 ? (
           <div className="text-gray-500 italic p-2">No output yet...</div>

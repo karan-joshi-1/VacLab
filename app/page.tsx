@@ -37,17 +37,17 @@ export default function Home() {
       </div>
 
       {/* Content area with components in the requested layout */}
-      <div className=" p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-.5 h-full">
+      <div className="flex-1 p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
           {/* Left side: stacked MlLoader (top) and FileUploader (bottom) */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4">
             {/* MlLoader in top left - pass setSharedJsonData to update JSON data */}
-            <div className="flex-1 bg-gray-900 rounded-lg shadow-lg">
+            <div className="bg-gray-900 rounded-lg shadow-lg">
               <MlLoader onJsonChange={setSharedJsonData} />
             </div>
             
             {/* FileUploader in bottom left */}
-            <div className="flex-1 bg-gray-900 rounded-lg shadow-lg overflow-auto">
+            <div className="bg-gray-900 rounded-lg shadow-lg overflow-auto">
               <FileUploader />
             </div>
           </div>

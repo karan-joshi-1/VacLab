@@ -251,10 +251,10 @@ export default function FileUploader() {
   };
 
   return (
-    <div className="p-6 w-full mx-auto">
-      <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+    <div className={`w-full ${showCommandOutput ? 'p-2' : 'p-4'}`}>
+      <div className={`bg-gray-800 rounded-lg shadow-lg ${showCommandOutput ? 'p-3' : 'p-4'}`}>
         {/* Simple header showing file being uploaded */}
-        <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-3">
+        <div className={`flex justify-between items-center border-b border-gray-700 ${showCommandOutput ? 'mb-2 pb-2' : 'mb-4 pb-3'}`}>
           <div className="flex items-center">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
@@ -281,7 +281,7 @@ export default function FileUploader() {
           )}
         </div>
 
-        <form onSubmit={handleUpload} className="space-y-4">
+        <form onSubmit={handleUpload} className={`${showCommandOutput ? 'space-y-2' : 'space-y-4'}`}>
           {/* Remote directory input */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -433,7 +433,7 @@ export default function FileUploader() {
 
         {/* Command Output Component */}
         {showCommandOutput && (
-          <div className="mt-6">
+          <div className="mt-4">
             <CommandOutput formData={commandFormData} />
           </div>
         )}
