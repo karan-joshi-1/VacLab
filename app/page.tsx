@@ -12,6 +12,13 @@ export default function Home() {
   
   // Shared state for JSON data between MlLoader and JsonEditor
   const [sharedJsonData, setSharedJsonData] = useState<any>(null)
+  const [jsonFileName, setJsonFileName] = useState<string>('modelConfig.json')
+
+  // Function to handle JSON upload from FileUploader
+  const handleJsonUpload = (jsonData: any, fileName: string) => {
+    setSharedJsonData(jsonData)
+    setJsonFileName(fileName)
+  }
 
   // Redirect to auth page if not authenticated
   useEffect(() => {
@@ -48,13 +55,17 @@ export default function Home() {
             
             {/* FileUploader in bottom left */}
             <div className="bg-gray-900 rounded-lg shadow-lg overflow-auto">
-              <FileUploader />
+              <FileUploader onJsonUpload={handleJsonUpload} />
             </div>
           </div>
           
           {/* JsonEditor takes full height on the right side - pass sharedJsonData */}
           <div className="lg:row-span-2 bg-gray-900 rounded-lg shadow-lg">
-            <JsonEditor importedJson={sharedJsonData} onJsonChange={setSharedJsonData} />
+            <JsonEditor 
+              importedJson={sharedJsonData} 
+              onJsonChange={setSharedJsonData} 
+              fileName={jsonFileName}
+            />
           </div>
         </div>
       </div>

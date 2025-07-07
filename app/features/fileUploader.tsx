@@ -4,7 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import CommandOutput from './CommandOutput';
 
-export default function FileUploader() {
+interface FileUploaderProps {
+  onJsonUpload?: (jsonData: any, fileName: string) => void;
+}
+
+export default function FileUploader({ onJsonUpload }: FileUploaderProps) {
   // Use the auth context to get user information
   const { connectionDetails } = useAuth();
   const router = useRouter();
@@ -44,6 +48,16 @@ export default function FileUploader() {
         // Create a file object for display
         const file = new File([content], fileName, { type: 'application/json' });
         setSelectedFile(file);
+        
+        // Parse and pass JSON data to parent component
+        if (onJsonUpload) {
+          try {
+            const parsedJson = JSON.parse(content);
+            onJsonUpload(parsedJson, fileName || 'data.json');
+          } catch (error) {
+            console.error('Error parsing JSON content:', error);
+          }
+        }
       }
     };
     
@@ -52,7 +66,7 @@ export default function FileUploader() {
     return () => {
       document.removeEventListener('openInFileUploader', handleOpenInFileUploader);
     };
-  }, []);
+  }, [onJsonUpload]);
   
   // Handle authentication redirect
   useEffect(() => {
@@ -91,6 +105,16 @@ export default function FileUploader() {
         reader.onload = (e) => {
           const content = e.target?.result as string;
           setJsonContent(content);
+          
+          // Parse and pass JSON data to parent component
+          if (onJsonUpload) {
+            try {
+              const parsedJson = JSON.parse(content);
+              onJsonUpload(parsedJson, file.name);
+            } catch (error) {
+              console.error('Error parsing JSON file:', error);
+            }
+          }
         };
         reader.readAsText(file);
       } else {
