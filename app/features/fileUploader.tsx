@@ -279,17 +279,17 @@ export default function FileUploader({ onJsonUpload }: FileUploaderProps) {
       <div className={`bg-gray-800 rounded-lg shadow-lg ${showCommandOutput ? 'p-3' : 'p-4'}`}>
         {/* Simple header showing file being uploaded */}
         <div className={`flex justify-between items-center border-b border-gray-700 ${showCommandOutput ? 'mb-2 pb-2' : 'mb-4 pb-3'}`}>
-          <div className="flex items-center">
+          <div className="flex items-center min-w-0 flex-1">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
-              className={`h-5 w-5 ${jsonMode ? 'text-blue-400' : 'text-gray-400'} mr-2`}
+              className={`h-5 w-5 ${jsonMode ? 'text-blue-400' : 'text-gray-400'} mr-2 flex-shrink-0`}
               viewBox="0 0 20 20" 
               fill="currentColor"
             >
               <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm0 2h4v3a1 1 0 001 1h3v8H6V4z" clipRule="evenodd" />
             </svg>
-            <h2 className="text-lg font-medium text-gray-200">
-              {selectedFile ? 'Upload File: ' + selectedFile.name : 'Upload File'}
+            <h2 className="text-lg font-medium text-gray-200 truncate">
+              {selectedFile ? `Upload File: ${selectedFile.name}` : 'Upload File'}
             </h2>
           </div>
           
@@ -298,7 +298,7 @@ export default function FileUploader({ onJsonUpload }: FileUploaderProps) {
             <button 
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-xs text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+              className="text-xs text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded flex-shrink-0"
             >
               Select Different File
             </button>
@@ -317,15 +317,21 @@ export default function FileUploader({ onJsonUpload }: FileUploaderProps) {
               onChange={handleDirectoryChange}
               className={`w-full px-4 py-2 rounded-md bg-gray-700 border ${
                 pathError ? 'border-red-500' : 'border-gray-600'
-              } text-white`}
+              } text-white font-mono text-sm`}
               placeholder={baseHomeDir}
+              title={`Current path: ${remoteDir}`}
             />
             {pathError ? (
-              <p className="mt-1 text-xs text-red-400">{pathError}</p>
+              <p className="mt-1 text-xs text-red-400 break-all">{pathError}</p>
             ) : (
-              <p className="text-xs text-gray-400 mt-1">
-                Path must be within your home directory: {baseHomeDir}
-              </p>
+              <div className="text-xs text-gray-400 mt-1">
+                <p className="break-all">
+                  Path must be within your home directory: 
+                </p>
+                <p className="font-mono text-gray-300 bg-gray-800 px-2 py-1 rounded mt-1 break-all">
+                  {baseHomeDir}
+                </p>
+              </div>
             )}
           </div>
           
@@ -365,8 +371,8 @@ export default function FileUploader({ onJsonUpload }: FileUploaderProps) {
               {/* File details */}
               <div className="border border-gray-700/50 rounded p-4 bg-gray-800/30">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-gray-700 p-2 rounded">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                    <div className="bg-gray-700 p-2 rounded flex-shrink-0">
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
                         className={`h-6 w-6 ${jsonMode ? 'text-blue-400' : 'text-gray-300'}`}
@@ -385,16 +391,18 @@ export default function FileUploader({ onJsonUpload }: FileUploaderProps) {
                         />
                       </svg>
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       {jsonMode ? (
                         <input
                           type="text"
                           value={jsonFileName}
                           onChange={handleJsonFileNameChange}
-                          className="bg-transparent border-b border-gray-600 px-2 py-1 text-white focus:border-blue-400 focus:outline-none"
+                          className="bg-transparent border-b border-gray-600 px-2 py-1 text-white focus:border-blue-400 focus:outline-none w-full"
                         />
                       ) : (
-                        <p className="text-gray-200 font-medium">{selectedFile.name}</p>
+                        <p className="text-gray-200 font-medium truncate" title={selectedFile.name}>
+                          {selectedFile.name}
+                        </p>
                       )}
                       <p className="text-xs text-gray-400">
                         {(selectedFile.size / 1024).toFixed(2)} KB
@@ -411,7 +419,7 @@ export default function FileUploader({ onJsonUpload }: FileUploaderProps) {
                       setCommandFormData(undefined);
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
-                    className="text-gray-400 hover:text-white p-1"
+                    className="text-gray-400 hover:text-white p-1 flex-shrink-0"
                     title="Remove file"
                   >
                     <svg 
@@ -448,10 +456,13 @@ export default function FileUploader({ onJsonUpload }: FileUploaderProps) {
             type="submit"
             disabled={uploadStatus.status === 'uploading' || !selectedFile || !!pathError}
             className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+            title={selectedFile ? `Upload & Run ${selectedFile.name}` : 'Upload & Run'}
           >
             {uploadStatus.status === 'uploading' 
               ? 'Uploading...' 
-              : `Upload & Run ${selectedFile ? selectedFile.name : ''}`}
+              : selectedFile 
+                ? `Upload & Run ${selectedFile.name.length > 20 ? selectedFile.name.substring(0, 20) + '...' : selectedFile.name}`
+                : 'Upload & Run'}
           </button>
         </form>
 

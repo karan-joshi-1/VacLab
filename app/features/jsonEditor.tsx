@@ -222,22 +222,57 @@ export default function JsonEditor({ importedJson = null, onJsonChange = null, f
 
     return (
         <div className="w-full mx-auto">
+            <style jsx>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 8px;
+                    height: 8px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: #374151;
+                    border-radius: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #6B7280;
+                    border-radius: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #9CA3AF;
+                }
+                /* Custom styles for react-json-view to handle long strings */
+                .react-json-view .object-key-val span {
+                    word-break: break-all !important;
+                    overflow-wrap: break-word !important;
+                    white-space: pre-wrap !important;
+                }
+                .react-json-view .string-value {
+                    word-break: break-all !important;
+                    overflow-wrap: break-word !important;
+                    white-space: pre-wrap !important;
+                }
+            `}</style>
             <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-                <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center min-w-0 flex-1 mr-4">
                         <svg 
                             xmlns="http://www.w3.org/2000/svg" 
-                            className="h-5 w-5 text-blue-400 mr-2" 
+                            className="h-5 w-5 text-blue-400 mr-2 flex-shrink-0" 
                             viewBox="0 0 20 20" 
                             fill="currentColor"
                         >
                             <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm0 2h4v3a1 1 0 001 1h3v8H6V4z" clipRule="evenodd" />
                         </svg>
-                        <h2 className="text-xl font-semibold text-gray-200 truncate max-w-xs" title={currentFileName}>
-                            {currentFileName}
-                        </h2>
+                        <div className="min-w-0 flex-1">
+                            <h2 className="text-xl font-semibold text-gray-200 break-all" title={currentFileName}>
+                                {currentFileName}
+                            </h2>
+                            {currentFileName.length > 30 && (
+                                <p className="text-xs text-gray-400 mt-1 font-mono break-all">
+                                    {currentFileName}
+                                </p>
+                            )}
+                        </div>
                     </div>
-                    <div className="space-x-2 flex">
+                    <div className="space-x-2 flex flex-shrink-0">
                         <button 
                             onClick={handleSendToSFTPUploader}
                             className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded flex items-center"
@@ -282,29 +317,34 @@ export default function JsonEditor({ importedJson = null, onJsonChange = null, f
                         </svg>
                         <span className="font-medium">Auto Type Conversion:</span>
                     </div>
-                    <div className="text-gray-400">
-                        Values are automatically converted: integers (123), floats (12.34), booleans (true/false), null, or kept as strings. Use Ctrl/Cmd+Enter to Submit
+                    <div className="text-gray-400 break-words">
+                        Values are automatically converted: integers (123), floats (12.34), booleans (true/false), null, or kept as strings. Long paths and values will wrap properly. Use Ctrl/Cmd+Enter to Submit
                     </div>
                 </div>
                 
                 {/* Scrollable container for the JSON editor */}
-                <div className="max-h-[680px] overflow-y-auto custom-scrollbar">
+                <div className="max-h-[680px] overflow-y-auto overflow-x-auto custom-scrollbar">
                     {/* Pass props directly to the component with proper typing */}
                     <ReactJson
                         src={jsonData}
                         theme="monokai"
                         name={false}
                         iconStyle="triangle"
-                        indentWidth={.5}
+                        indentWidth={2}
                         collapsed={false}
-                        collapseStringsAfterLength={50}
+                        collapseStringsAfterLength={false}
                         displayDataTypes={true}
                         displayObjectSize={true}
                         enableClipboard={true}
                         onEdit={handleOnChange}
                         onAdd={handleOnAdd}
                         onDelete={handleOnDelete}
-                        style={{ padding: '10px', borderRadius: '4px' }}
+                        style={{ 
+                            padding: '10px', 
+                            borderRadius: '4px',
+                            wordBreak: 'break-all',
+                            overflowWrap: 'break-word'
+                        }}
                     />
                 </div>
             </div>
