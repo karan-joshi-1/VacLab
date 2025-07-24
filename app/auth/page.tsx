@@ -15,8 +15,8 @@ export default function AuthPage() {
   const router = useRouter()
   const { setConnectionDetails } = useAuth()
 
-  // Hardcoded 4-digit PIN
-  const correctPin = '1234'
+  // Hardcoded 5-digit PIN
+  const correctPin = '13425'
 
   // Check for existing session on component mount
   useEffect(() => {
@@ -43,8 +43,8 @@ export default function AuthPage() {
   }, [router, setConnectionDetails])
 
   function handlePinChange(value: string) {
-    // Only allow digits and limit to 4 characters
-    const digitsOnly = value.replace(/\D/g, '').slice(0, 4)
+    // Only allow digits and limit to 5 characters
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 5)
     setPin(digitsOnly)
   }
 
@@ -61,13 +61,13 @@ export default function AuthPage() {
     }
 
     if (!pin) {
-      setError('Please provide a 4-digit PIN')
+      setError('Please provide a 5-digit PIN')
       setIsLoading(false)
       return
     }
 
-    if (pin.length !== 4) {
-      setError('PIN must be exactly 4 digits')
+    if (pin.length !== 5) {
+      setError('PIN must be exactly 5 digits')
       setIsLoading(false)
       return
     }
@@ -163,21 +163,21 @@ export default function AuthPage() {
             </label>
 
             <label className="block">
-              <span className="text-gray-300 text-sm font-medium block mb-1">4-Digit PIN</span>
+              <span className="text-gray-300 text-sm font-medium block mb-1"> PIN</span>
               <input
                 type="password"
                 value={pin}
                 onChange={e => handlePinChange(e.target.value)}
-                maxLength={4}
+                maxLength={5}
                 required
                 className="w-full px-4 py-3 text-center text-lg tracking-widest rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="••••"
+                placeholder="•••••"
               />
             </label>
             
             <button
               type="submit"
-              disabled={isLoading || pin.length !== 4}
+              disabled={isLoading || pin.length !== 5}
               className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Connecting...' : 'Connect to Host'}
