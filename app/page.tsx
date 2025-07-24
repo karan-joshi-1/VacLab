@@ -8,7 +8,7 @@ import { useAuth } from './context/AuthContext'
 
 export default function Home() {
   const router = useRouter()
-  const { connectionDetails } = useAuth()
+  const { connectionDetails, clearAuth } = useAuth()
   
   // Shared state for JSON data between MlLoader and JsonEditor
   const [sharedJsonData, setSharedJsonData] = useState<any>(null)
@@ -18,6 +18,12 @@ export default function Home() {
   const handleJsonUpload = (jsonData: any, fileName: string) => {
     setSharedJsonData(jsonData)
     setJsonFileName(fileName)
+  }
+
+  // Handle logout
+  const handleLogout = () => {
+    clearAuth()
+    router.push('/auth')
   }
 
   // Redirect to auth page if not authenticated
@@ -39,7 +45,15 @@ export default function Home() {
               Connected as: <span className="font-medium">{connectionDetails.hostname}</span> to <span className="font-bold">CAIR.LOGIN</span>
             </span>
           </div>
-          <h1 className="text-xl font-bold text-white">VMES Platform</h1>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-bold text-white">VMES Platform</h1>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 

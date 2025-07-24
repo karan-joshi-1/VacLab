@@ -1,5 +1,5 @@
 'use client'
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 type ConnectionDetails = {
   ip: string;
@@ -36,8 +36,32 @@ export const useAuth = () => useContext(AuthContext);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [connectionDetails, setConnectionDetails] = useState<ConnectionDetails>(defaultConnectionDetails);
 
+  // Check for saved session on app load
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('cairAuth');
+    if (savedAuth) {
+      try {
+        const authData = JSON.parse(savedAuth);
+        const now = new Date().getTime();
+        
+        // Check if session is still valid (30 days)
+        if (authData.expiresAt && now < authData.expiresAt) {
+          setConnectionDetails(authData.connectionDetails);
+        } else {
+          // Session expired, clear it
+          localStorage.removeItem('cairAuth');
+        }
+      } catch (error) {
+        // Invalid stored data, clear it
+        localStorage.removeItem('cairAuth');
+      }
+    }
+  }, []);
+
   const clearAuth = () => {
     setConnectionDetails(defaultConnectionDetails);
+    // Clear localStorage session
+    localStorage.removeItem('cairAuth');
   };
 
   return (

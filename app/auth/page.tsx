@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../context/AuthContext'
 
@@ -9,10 +9,44 @@ export default function AuthPage() {
   
   const [hostname, setHostname] = useState('')
   const [password, setPassword] = useState('')
+  const [pin, setPin] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { setConnectionDetails } = useAuth()
+
+  // Hardcoded 4-digit PIN
+  const correctPin = '1234'
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('cairAuth')
+    if (savedAuth) {
+      try {
+        const authData = JSON.parse(savedAuth)
+        const now = new Date().getTime()
+        
+        // Check if session is still valid (30 days)
+        if (authData.expiresAt && now < authData.expiresAt) {
+          setConnectionDetails(authData.connectionDetails)
+          router.push('/')
+          return
+        } else {
+          // Session expired, clear it
+          localStorage.removeItem('cairAuth')
+        }
+      } catch (error) {
+        // Invalid stored data, clear it
+        localStorage.removeItem('cairAuth')
+      }
+    }
+  }, [router, setConnectionDetails])
+
+  function handlePinChange(value: string) {
+    // Only allow digits and limit to 4 characters
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 4)
+    setPin(digitsOnly)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -22,6 +56,24 @@ export default function AuthPage() {
     // Validate credentials
     if (!password) {
       setError('Please provide a password')
+      setIsLoading(false)
+      return
+    }
+
+    if (!pin) {
+      setError('Please provide a 4-digit PIN')
+      setIsLoading(false)
+      return
+    }
+
+    if (pin.length !== 4) {
+      setError('PIN must be exactly 4 digits')
+      setIsLoading(false)
+      return
+    }
+
+    if (pin !== correctPin) {
+      setError('Incorrect PIN')
       setIsLoading(false)
       return
     }
@@ -41,12 +93,21 @@ export default function AuthPage() {
       
       if (res.ok) {
         // Save the connection details to context
-        setConnectionDetails({
+        const connectionDetails = {
           ip: hardcodedIp,
           hostname,
           password,
           isAuthenticated: true
-        })
+        }
+        
+        setConnectionDetails(connectionDetails)
+        
+        // Save to localStorage with expiration (30 days)
+        const expiresAt = new Date().getTime() + (30 * 24 * 60 * 60 * 1000)
+        localStorage.setItem('cairAuth', JSON.stringify({
+          connectionDetails,
+          expiresAt
+        }))
         
         router.push('/')
       } else {
@@ -100,11 +161,24 @@ export default function AuthPage() {
                 placeholder="Enter password"
               />
             </label>
+
+            <label className="block">
+              <span className="text-gray-300 text-sm font-medium block mb-1">4-Digit PIN</span>
+              <input
+                type="password"
+                value={pin}
+                onChange={e => handlePinChange(e.target.value)}
+                maxLength={4}
+                required
+                className="w-full px-4 py-3 text-center text-lg tracking-widest rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="••••"
+              />
+            </label>
             
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-gray-800 disabled:opacity-50"
+              disabled={isLoading || pin.length !== 4}
+              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Connecting...' : 'Connect to Host'}
             </button>
