@@ -24,15 +24,33 @@ export default function AuthPage() {
     if (savedAuth) {
       try {
         const authData = JSON.parse(savedAuth)
-        const now = new Date().getTime()
         
-        // Check if session is still valid (30 days)
-        if (authData.expiresAt && now < authData.expiresAt) {
-          setConnectionDetails(authData.connectionDetails)
-          router.push('/')
-          return
+        // Validate session token with server
+        if (authData.sessionToken) {
+          fetch('/api/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionToken: authData.sessionToken })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              setConnectionDetails({
+                ...data.sessionData,
+                sessionToken: authData.sessionToken
+              })
+              router.push('/')
+            } else {
+              // Invalid or expired session
+              localStorage.removeItem('cairAuth')
+            }
+          })
+          .catch(() => {
+            // Network error or server issue
+            localStorage.removeItem('cairAuth')
+          })
         } else {
-          // Session expired, clear it
+          // Old format without session token, clear it
           localStorage.removeItem('cairAuth')
         }
       } catch (error) {
@@ -92,20 +110,21 @@ export default function AuthPage() {
       const data = await res.json()
       
       if (res.ok) {
-        // Save the connection details to context
+        // Server returned session token
+        const { sessionToken, expiresAt } = data
+        
         const connectionDetails = {
           ip: hardcodedIp,
           hostname,
-          password,
-          isAuthenticated: true
+          isAuthenticated: true,
+          sessionToken
         }
         
         setConnectionDetails(connectionDetails)
         
-        // Save to localStorage with expiration (30 days)
-        const expiresAt = new Date().getTime() + (30 * 24 * 60 * 60 * 1000)
+        // Save session token to localStorage (no password!)
         localStorage.setItem('cairAuth', JSON.stringify({
-          connectionDetails,
+          sessionToken,
           expiresAt
         }))
         

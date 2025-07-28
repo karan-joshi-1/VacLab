@@ -4,8 +4,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 type ConnectionDetails = {
   ip: string;
   hostname: string;
-  password: string;
   isAuthenticated: boolean;
+  sessionToken?: string;
 };
 
 interface AuthContextType {
@@ -18,7 +18,6 @@ interface AuthContextType {
 const defaultConnectionDetails: ConnectionDetails = {
   ip: '10.250.0.22', // Hardcoded IP as per requirements
   hostname: '',
-  password: '',
   isAuthenticated: false,
 };
 
@@ -42,13 +41,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (savedAuth) {
       try {
         const authData = JSON.parse(savedAuth);
-        const now = new Date().getTime();
         
-        // Check if session is still valid (30 days)
-        if (authData.expiresAt && now < authData.expiresAt) {
-          setConnectionDetails(authData.connectionDetails);
+        // Validate session token with server
+        if (authData.sessionToken) {
+          fetch('/api/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionToken: authData.sessionToken })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              setConnectionDetails({
+                ...data.sessionData,
+                sessionToken: authData.sessionToken
+              });
+            } else {
+              // Invalid or expired session
+              localStorage.removeItem('cairAuth');
+            }
+          })
+          .catch(() => {
+            // Network error or server issue
+            localStorage.removeItem('cairAuth');
+          });
         } else {
-          // Session expired, clear it
+          // Old format without session token, clear it
           localStorage.removeItem('cairAuth');
         }
       } catch (error) {
@@ -59,6 +77,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clearAuth = () => {
+    // If we have a session token, invalidate it on server
+    if (connectionDetails.sessionToken) {
+      fetch('/api/session', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionToken: connectionDetails.sessionToken })
+      }).catch(() => {
+        // Ignore errors during logout
+      });
+    }
+    
     setConnectionDetails(defaultConnectionDetails);
     // Clear localStorage session
     localStorage.removeItem('cairAuth');
