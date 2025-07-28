@@ -1,12 +1,5 @@
 import { NextResponse } from 'next/server';
 import { Client } from 'ssh2';
-import crypto from 'crypto';
-import { setSession } from '../../lib/sessionStore';
-
-// Generate a secure session token
-function generateSessionToken(): string {
-  return crypto.randomBytes(32).toString('hex');
-}
 
 export async function POST(request: Request) {
   try {
@@ -35,23 +28,7 @@ export async function POST(request: Request) {
           console.log('SSH connection successful');
           clearTimeout(timeoutId);
           conn.end();
-          
-          // Generate session token
-          const sessionToken = generateSessionToken();
-          const expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days
-          
-          // Store session data (without password)
-          setSession(sessionToken, {
-            ip,
-            hostname,
-            expiresAt
-          });
-          
-          resolve(NextResponse.json({ 
-            success: true, 
-            sessionToken,
-            expiresAt
-          }));
+          resolve(NextResponse.json({ success: true }));
         })
         .on('error', (err) => {
           clearTimeout(timeoutId);
