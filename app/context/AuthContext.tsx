@@ -44,11 +44,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const authData = JSON.parse(savedAuth);
         const now = new Date().getTime();
         
-        // Check if session is still valid (30 days)
-        if (authData.expiresAt && now < authData.expiresAt) {
-          setConnectionDetails(authData.connectionDetails);
+        // Handle both old and new session formats
+        if (authData.connectionDetails) {
+          // Old format with connectionDetails
+          if (authData.expiresAt && now < authData.expiresAt) {
+            setConnectionDetails(authData.connectionDetails);
+          } else {
+            // Session expired, clear it
+            localStorage.removeItem('cairAuth');
+          }
+        } else if (authData.sessionToken) {
+          // New session token format - clear it since we're back to old format
+          localStorage.removeItem('cairAuth');
         } else {
-          // Session expired, clear it
+          // Unknown format, clear it
           localStorage.removeItem('cairAuth');
         }
       } catch (error) {
